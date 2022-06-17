@@ -45,9 +45,7 @@ function MainBody(props) {
 }
 
 
-function EditableField(props) {
-
-  const [content, setContent] = useState('');
+function EditableH2(props) {
   const [inEdit, setInEdit] = useState(false);
 
   const handleClick = (e) => {
@@ -55,8 +53,7 @@ function EditableField(props) {
   }
 
   const handleChange = (e) => {
-    setContent(e.target.value)
-    console.log(content)
+    props.handleChange(e.target.value)
   }
   const handleSubmit = (e) => {
     e.preventDefault()
@@ -64,11 +61,38 @@ function EditableField(props) {
   }
 
   return (
-    <div className='editable-field'>
+    <div className='editable-h2'>
       {
         inEdit
-        ? <form onBlur={handleSubmit} onSubmit={handleSubmit}><input autoFocus={true} onSubmit={handleSubmit} onChange={handleChange} value={content} /></form>
-        : <h2 style={content === '' ? {color: 'gray'} : {color: 'black'}} onClick={handleClick}>{content === '' ? 'set title...' : content}</h2>
+        ? <form onBlur={handleSubmit} onSubmit={handleSubmit}><input autoFocus={true} onSubmit={handleSubmit} onChange={handleChange} value={props.text} /></form>
+        : <h2 style={props.text === '' ? {color: 'gray'} : {color: 'black'}} onClick={handleClick}>{props.text === '' ? 'set title...' : props.text}</h2>
+      }
+    </div>
+  )
+}
+
+
+function EditableP(props) {
+  const [inEdit, setInEdit] = useState(false);
+
+  const handleClick = (e) => {
+    setInEdit(true)
+  }
+
+  const handleChange = (e) => {
+    props.handleChange(e.target.value)
+  }
+  const handleSubmit = (e) => {
+    e.preventDefault()
+    setInEdit(false)
+  }
+
+  return (
+    <div className='editable-p'>
+      {
+        inEdit
+        ? <form onBlur={handleSubmit} onSubmit={handleSubmit}><input autoFocus={true} onSubmit={handleSubmit} onChange={handleChange} value={props.text} /></form>
+        : <p style={props.text === '' ? {color: 'gray'} : {color: 'black'}} onClick={handleClick}>{props.text === '' ? 'set title...' : props.text}</p>
       }
       
     </div>
@@ -76,52 +100,64 @@ function EditableField(props) {
 }
 
 
-
 function ListContainer(props) {
   const [title, setTitle] = useState('Shtuff to do')
-  const [listItems, setListItems] = useState([
-    { id: 1, content: "get groceries", checked: false },
-    { id: 2, content: "send email", checked: false },
-    { id: 3, content: "pay credit card bill", checked: false },
-  ])
+  const [listItems, setListItems] = useState({
+    1: { content: "get groceries", checked: false },
+    2: { content: "send email", checked: false },
+    3: { content: "pay credit card bill", checked: false },
+  })
 
-
-  const handleTitleInput = (e) => {
-    setTitle(e.target.textContent)
-    console.log(title)
+  const handleItemChange = (id, updatedItem) => {
+    setListItems(prevItem => {
+      return {
+        ...prevItem,
+        [id]: updatedItem
+      }
+    })
+    console.log(listItems)
   }
 
-  const handleCheck = (key) => {
-    setListItems(
-      listItems.map(listItem =>
-        listItem.id === key
-          ? { ...listItem, checked: !listItem.checked }
-          : listItem
-      )
-    )
-    console.log(listItems)
+  const handleTitleChange = (newTitle) => {
+    setTitle(newTitle)
   }
 
   return (
     <div className='list-container'>
-      {/* <h2 contentEditable={true} onBlur={handleTitleInput} className='list-title'>{title}</h2> */}
-      <EditableField />
+      <EditableH2 text={title} handleChange={handleTitleChange} />
       <div className='list-body'>
         {
-          listItems.map(
-            ({ content, checked, id }) => <ListItem key={id} id={id} content={content} checked={checked} handleCheck={handleCheck} />
-          )
+          Object.keys(listItems).map(id => {
+            return <ListItem key={id} id={id} item={listItems[id]} handleItemChange={handleItemChange} />
+          })
         }
       </div>
     </div>
   )
 }
 
+
 function ListItem(props) {
+  const { checked, content } = props.item
+
+  const handleCheck = () => {
+    props.handleItemChange(props.id, {
+      ...props.item,
+      checked: !checked,
+    })
+  }
+
+  const handleTextChange = newText => {
+    props.handleItemChange(props.id, {
+      ...props.item,
+      content: newText,
+    })
+  }
 
   return (
     <div className='list-item-container'>
-      <input className='check-box' type="checkbox" checked={props.checked} onChange={() => props.handleCheck(props.id)} />{props.content}
+      <input className='check-box' type="checkbox" checked={checked} onChange={handleCheck} />
+      <EditableP text={content} handleChange={handleTextChange} />
     </div>
   )
 }
