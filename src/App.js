@@ -1,13 +1,32 @@
 import logo from './logo.svg';
 import './App.css';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { API_ENDPOINT } from './api';
+
+
+
 
 function App() {
+  const [lists, setLists] = useState([])
+  const [currentList, setCurrentList] = useState({})
+
+  useEffect(() => {
+    fetch(`${API_ENDPOINT}/lists`)
+      .then(async response => {
+        await setLists(await response.json())
+        setCurrentList(lists[0])
+      })
+  }, [])
+
+  const changeListInView = listId => {
+    setCurrentList(lists.find(({_id}) => _id === listId))
+  }
+
   return (
     <div className="App">
       <ToolbarNav />
-      <Sidebar />
-      <MainBody />
+      <Sidebar lists={lists} handleClick={changeListInView} />
+      <MainBody list={currentList}/>
     </div>
   );
 }
@@ -22,14 +41,17 @@ function ToolbarNav(props) {
 }
 
 
-function Sidebar() {
+function Sidebar(props) {
+
+  const handleClick = (e) => {
+    e.preventDefault()
+    props.handleClick(e.target.id)
+  }
+
   return (
     <nav className='sidebar'>
       <ul>
-        <li><a href='nothinghere'>some link</a></li>
-        <li><a href='nothinghere'>some other link</a></li>
-        <li><a href='nothinghere'>yet another link</a></li>
-        <li><a href='nothinghere'>get out</a></li>
+        {props.lists.map(({ title, color, _id }) => <li key={_id} id={_id} style={{background: color}}><a onClick={handleClick} href=''>{title}</a></li>)}
       </ul>
     </nav>
   )
@@ -39,7 +61,7 @@ function Sidebar() {
 function MainBody(props) {
   return (
     <div className='main-body'>
-      <ListContainer />
+      <ListContainer list={props.list} />
     </div>
   )
 }
@@ -64,8 +86,8 @@ function EditableH2(props) {
     <div className='editable-h2'>
       {
         inEdit
-        ? <form onBlur={handleSubmit} onSubmit={handleSubmit}><input autoFocus={true} onSubmit={handleSubmit} onChange={handleChange} value={props.text} /></form>
-        : <h2 style={props.text === '' ? {color: 'gray'} : {color: 'black'}} onClick={handleClick}>{props.text === '' ? 'set title...' : props.text}</h2>
+          ? <form onBlur={handleSubmit} onSubmit={handleSubmit}><input autoFocus={true} onSubmit={handleSubmit} onChange={handleChange} value={props.text} /></form>
+          : <h2 style={props.text === '' ? { color: 'gray' } : { color: 'black' }} onClick={handleClick}>{props.text === '' ? 'set title...' : props.text}</h2>
       }
     </div>
   )
@@ -91,10 +113,10 @@ function EditableP(props) {
     <div className='editable-p'>
       {
         inEdit
-        ? <form onBlur={handleSubmit} onSubmit={handleSubmit}><input autoFocus={true} onSubmit={handleSubmit} onChange={handleChange} value={props.text} /></form>
-        : <p style={props.text === '' ? {color: 'gray'} : {color: 'black'}} onClick={handleClick}>{props.text === '' ? 'set title...' : props.text}</p>
+          ? <form onBlur={handleSubmit} onSubmit={handleSubmit}><input autoFocus={true} onSubmit={handleSubmit} onChange={handleChange} value={props.text} /></form>
+          : <p style={props.text === '' ? { color: 'gray' } : { color: 'black' }} onClick={handleClick}>{props.text === '' ? 'set title...' : props.text}</p>
       }
-      
+
     </div>
   )
 }
@@ -122,6 +144,10 @@ function ListContainer(props) {
     setTitle(newTitle)
   }
 
+  const addItem = () => {
+
+  }
+
   return (
     <div className='list-container'>
       <EditableH2 text={title} handleChange={handleTitleChange} />
@@ -132,6 +158,7 @@ function ListContainer(props) {
           })
         }
       </div>
+      <button>Add Item</button>
     </div>
   )
 }
