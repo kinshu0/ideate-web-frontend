@@ -61,11 +61,12 @@
 .sidebar ul li {
   list-style: none;
   padding: 1em;
+  font-weight: bold;
 }
 
-.sidebar ul li a {
-  font-weight: bold;
+.sidebar a {
   text-decoration: none;
+  color: antiquewhite;
 }
 
 .list-body {
